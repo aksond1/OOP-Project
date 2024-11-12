@@ -21,22 +21,53 @@ class Sport(Protocol):
     def get_competitions(self) -> List[str]:
         pass
 
-class SportsFromFile:
-    def __init__(self, sport_name):
-        self.sport_name = sport_name
-        self.competitions = []
 
+class BaseSport:
+    def __init__(self, sport_name: str):
+        self.sport_name = sport_name
+        self.competitions = self.load_competitions()
+
+    def load_competitions(self) -> List[str]:
         with open("competitions.json", "r", encoding="utf-8") as f:
             data = json.load(f)
-            
-            if sport_name in data:
-                self.competitions = data[sport_name]
+            return data.get(self.sport_name, [])
 
     def get_sport_name(self) -> str:
         return self.sport_name
-    
+
     def get_competitions(self) -> List[str]:
         return self.competitions
+
+
+class FootballSport(BaseSport):
+    def get_competitions(self) -> List[str]:
+        competitions = super().get_competitions()
+        return competitions
+
+
+class BasketballSport(BaseSport):
+    def get_competitions(self) -> List[str]:
+        competitions = super().get_competitions()
+        return competitions
+
+
+class VolleyballSport(BaseSport):
+    def get_competitions(self) -> List[str]:
+        competitions = super().get_competitions()
+        return competitions
+
+
+class HockeySport(BaseSport):
+    def get_competitions(self) -> List[str]:
+        competitions = super().get_competitions()
+        return competitions
+
+
+class TennisSport(BaseSport):
+    def get_competitions(self) -> List[str]:
+        competitions = super().get_competitions()
+        return competitions
+
 
 class FallingObject:
     def __init__(self, image, x, y, speed, scale_factor=0.3):
@@ -59,15 +90,16 @@ class FallingObject:
     def draw(self):
         screen.blit(self.image, (self.x, self.y))
 
+
 class SportApp:
     def __init__(self):
         self.background_color = background_color
         self.sports_objects = [
-            SportsFromFile("Футбол"),
-            SportsFromFile("Баскетбол"),
-            SportsFromFile("Волейбол"),
-            SportsFromFile("Хокей"),
-            SportsFromFile("Теніс")
+            FootballSport("Футбол"),
+            BasketballSport("Баскетбол"),
+            VolleyballSport("Волейбол"),
+            HockeySport("Хокей"),
+            TennisSport("Теніс")
         ]
         self.sports = [sport.get_sport_name() for sport in self.sports_objects]
         self.selected_sport: Sport = None
@@ -171,25 +203,26 @@ class SportApp:
                 self.falling_objects.append(FallingObject("hockey_puck", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3))
             elif sport_name == "Теніс":
                 self.falling_objects.append(FallingObject("tennis_ball", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3))
-            else:
-                
-                self.falling_objects = [
+            elif sport_name == "all":
+                self.falling_objects.extend([
                     FallingObject("football", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3),
                     FallingObject("basketball", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3),
                     FallingObject("volleyball", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3),
                     FallingObject("hockey_puck", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3),
                     FallingObject("tennis_ball", random.randint(0, WIDTH - 50), random.randint(-600, 0), random.uniform(1, 3), scale_factor=0.3)
-                ]
+                ])
+
+    def on_mouse_move(self, pos):
+        if not self.show_sport_info:
+            self.hovered_sport = None
+            for button in self.buttons:
+                if button["x"] < pos[0] < button["x"] + button["width"] and button["y"] < pos[1] < button["y"] + button["height"]:
+                    self.hovered_sport = button['sport']
+                    break
 
     def update(self):
         for obj in self.falling_objects:
             obj.fall()
-
-    def on_mouse_move(self, pos):
-        self.hovered_sport = None
-        for sport_button in self.buttons:
-            if sport_button["x"] < pos[0] < sport_button["x"] + sport_button["width"] and sport_button["y"] < pos[1] < sport_button["y"] + sport_button["height"]:
-                self.hovered_sport = sport_button["sport"]
 
 app = SportApp()
 
